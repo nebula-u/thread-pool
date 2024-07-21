@@ -34,14 +34,12 @@ public:
     }
 
 private:
-    // 基类
     class Base
     {
     public:
         virtual ~Base() = default;
     };
 
-    // 派生类
     template <typename T>
     class Derive : public Base
     {
@@ -51,7 +49,6 @@ private:
     };
 
 private:
-    // 定义一个基类指针
     std::unique_ptr<Base> base_;
 };
 
@@ -108,7 +105,8 @@ public:
     ~Task() = default;
     void setResult(Result* res);
     void exec();
-    // 用户可自定义任意任务类型，继承自Task，重写run方法，实现自定义任务处理
+
+    // 需要用户重写run方法，实现自身需要的功能
     virtual Any run() = 0;
 
 private:
@@ -118,7 +116,7 @@ private:
 // 线程池模式
 enum class PoolMode
 {
-    MODE_FIXED,  // 固定数量线程
+    MODE_FIXED,  // 固定数量线程（默认，缺省值为4）
     MODE_CACHED, // 线程数量可动态增长
 };
 
@@ -127,13 +125,10 @@ class Thread
 public:
     using ThreadHandler = std::function<void()>;
 
-    // 线程构造
     Thread(ThreadHandler handler);
 
-    // 线程析构
     ~Thread();
 
-    // 启动线程
     void start();
 
 private:
@@ -172,7 +167,7 @@ private:
 
     std::queue<std::shared_ptr<Task>> taskQueue_; // 任务队列
                                                   // 注：在这里使用智能指针，防止Task为一个短生命周期任务导致指针为空
-    std::atomic_uint taskSize_;                   // 任务数量
+    std::atomic_uint taskSize_;                   // 当前任务数量
     size_t taskQueueThreshHold_;                  // 最大任务数量阈值
 
     std::mutex taskQueMtx_;            // 保证任务队列的线程安全

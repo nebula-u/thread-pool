@@ -1,6 +1,6 @@
 #include "threadpool.h"
 
-const uint TASK_MAX_THRESHOLD = 40;
+const uint TASK_MAX_THRESHOLD = 40; // 最大任务数量
 
 ThreadPool::ThreadPool()
     : initThreadSize_(4),
@@ -113,15 +113,16 @@ void Thread::start()
 }
 
 Task::Task()
-    :result_(nullptr)
-{}
+    : result_(nullptr)
+{
+}
 
 void Task::exec()
 {
     result_->setValue(run());
 }
 
-void Task::setResult(Result* res)
+void Task::setResult(Result *res)
 {
     result_ = res;
 }
@@ -135,11 +136,11 @@ Result::Result(std::shared_ptr<Task> task, bool isValid)
 
 Any Result::get()
 {
-    if(!isValid_)
+    if (!isValid_)
     {
         return "";
     }
-    sem_.wait();            // task任务如果没有执行完，这里会阻塞用户的线程
+    sem_.wait(); // task任务如果没有执行完，这里会阻塞用户的线程
     return std::move(any_);
 }
 

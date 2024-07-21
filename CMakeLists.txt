@@ -8,8 +8,9 @@ project(thread-pool)
 
 include_directories(./include)
 aux_source_directory(./src SRCS_DIR)
+aux_source_directory(./test TEST_SRCS_DIR)
 
-add_executable(pool ${SRCS_DIR})
+add_executable(pool ${SRCS_DIR} ${TEST_SRCS_DIR})
 
 # 添加pthread库
 find_package(Threads REQUIRED)

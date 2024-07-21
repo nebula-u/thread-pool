@@ -23,6 +23,5 @@ int main(){
     Result result = pool.submitTask(std::make_shared<MyTask>());
     std::cout << result.get().cast_<int>() << std::endl;
 
-    getchar();
     return 0;
 }
