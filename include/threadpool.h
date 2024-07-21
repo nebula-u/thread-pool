@@ -7,6 +7,7 @@
 #include <functional>
 #include <iostream>
 #include <thread>
+#include <string>
 
 // 任务抽象基类
 class Task
@@ -68,13 +69,13 @@ private:
     void threadHandler();
 
 private:
-    std::vector<Thread *> threads_; // 线程列表
+    std::vector<std::unique_ptr<Thread>> threads_; // 线程列表
     size_t initThreadSize_;         // 初始线程数量
 
     std::queue<std::shared_ptr<Task>> taskQueue_; // 任务队列
                                                   // 注：在这里使用智能指针，防止Task为一个短生命周期任务导致指针为空
     std::atomic_uint taskSize_;                   // 任务数量
-    uint taskQueueThreshHold_;                    // 最大任务数量阈值
+    size_t taskQueueThreshHold_;                  // 最大任务数量阈值
 
     std::mutex taskQueMtx_;            // 保证任务队列的线程安全
     std::condition_variable notFull_;  // 保证任务队列不满
