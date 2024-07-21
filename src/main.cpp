@@ -4,33 +4,24 @@
 class MyTask : public Task
 {
 public:
-    void run()
+    Any run()
     {
+        int sum = 0;
         for(int i = 0; i < 10; i++)
         {
-            std::cout << i << std::endl;
-            sleep(1);
+            sum += i;
         }
+        return sum;
     }
 };
 
 
 int main(){
-
     ThreadPool pool;
     pool.start(4);
 
-    pool.submitTask(std::make_shared<MyTask>());
-    pool.submitTask(std::make_shared<MyTask>());
-    pool.submitTask(std::make_shared<MyTask>());
-    pool.submitTask(std::make_shared<MyTask>());
-    pool.submitTask(std::make_shared<MyTask>());
-    pool.submitTask(std::make_shared<MyTask>());
-    pool.submitTask(std::make_shared<MyTask>());
-    pool.submitTask(std::make_shared<MyTask>());
-    pool.submitTask(std::make_shared<MyTask>());
-    pool.submitTask(std::make_shared<MyTask>());
-
+    Result result = pool.submitTask(std::make_shared<MyTask>());
+    std::cout << result.get().cast_<int>() << std::endl;
 
     getchar();
     return 0;

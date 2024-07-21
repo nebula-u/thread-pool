@@ -1,6 +1,6 @@
 #include "threadpool.h"
 
-const uint TASK_MAX_THRESHOLD = 4;
+const uint TASK_MAX_THRESHOLD = 40;
 
 ThreadPool::ThreadPool()
     : initThreadSize_(4),
@@ -28,7 +28,7 @@ void ThreadPool::setTaskQueMaxThreshHold(uint threshold)
  * 获取锁
  * 线程的通信
  */
-void ThreadPool::submitTask(std::shared_ptr<Task> sp)
+Result ThreadPool::submitTask(std::shared_ptr<Task> sp)
 {
     std::unique_lock<std::mutex> lock(taskQueMtx_);
 
@@ -39,13 +39,14 @@ void ThreadPool::submitTask(std::shared_ptr<Task> sp)
     {
         // 等待1秒钟，条件依然没有满足
         std::cerr << "task queue is full, submit task fail" << std::endl;
-        return;
+        return Result(sp, false);
     }
 
     taskQueue_.emplace(sp);
     taskSize_++;
 
     notEmpty_.notify_all();
+    return Result(sp);
 }
 
 void ThreadPool::start(size_t size)
@@ -71,16 +72,15 @@ void ThreadPool::threadHandler()
     for (;;)
     {
         std::shared_ptr<Task> task = nullptr;
+
         {
             std::unique_lock<std::mutex> lock(taskQueMtx_);
-            std::cout << "等待取出任务来执行" << std::endl;
             notEmpty_.wait(lock, [&]() -> bool
                            { return taskQueue_.size() > 0; });
 
             task = taskQueue_.front();
             taskQueue_.pop();
             taskSize_--;
-            std::cout << "已经取出一条任务" << std::endl;
             if (taskQueue_.size() > 0)
             {
                 notEmpty_.notify_all();
@@ -89,7 +89,7 @@ void ThreadPool::threadHandler()
         }
         if (nullptr != task)
         {
-            task->run();
+            task->exec();
         }
     }
 }
@@ -110,4 +110,41 @@ void Thread::start()
 
     // 设置分离线程
     t.detach();
+}
+
+Task::Task()
+    :result_(nullptr)
+{}
+
+void Task::exec()
+{
+    result_->setValue(run());
+}
+
+void Task::setResult(Result* res)
+{
+    result_ = res;
+}
+
+Result::Result(std::shared_ptr<Task> task, bool isValid)
+    : task_(task),
+      isValid_(isValid)
+{
+    task_->setResult(this);
+}
+
+Any Result::get()
+{
+    if(!isValid_)
+    {
+        return "";
+    }
+    sem_.wait();            // task任务如果没有执行完，这里会阻塞用户的线程
+    return std::move(any_);
+}
+
+void Result::setValue(Any any)
+{
+    this->any_ = std::move(any);
+    sem_.post();
 }

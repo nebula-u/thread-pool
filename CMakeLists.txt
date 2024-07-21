@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.0)
 # 指定C++标准为C++14
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 # 确保使用指定的C++标准
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
